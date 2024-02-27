@@ -1,15 +1,29 @@
-Tradeoffs:
+# TOR Exit Node Browser
 
-Assume that the # of TOR exit nodes is small enough that we can load them all into memory; making updates easier when we re-download the list. Would have to do something more complex if this weren't true (e.g., double-buffering with versions or something)
+This system is composed of two pieces:
 
-No automated testing, in the interest of time. Lots of manual testing.
+1. A Go backend that fetches lists of TOR Exit Node IP addresses from multiple source of truth and merges them into a postgres database.  It periodically scans this database for any entries without associated geolocation data and fetches those data as well.
+2. A react-admin based frontend that supports browsing the data, as well as filtering the data based on country code, and excluding certain IP addresses on a per-user basis.
 
-No canned data / mock tor IP server for local testing; relies on production data for development.
+The backend also manages users with passwords, and associates the list of disallowed IP addresses with those users.
 
-Could be some wonkiness if exploring pagination while doing deletes / updates. Would need versioning + double buffering for this, but hard to get around this absolutely.
+## Design decisions and tradeoffs
 
-Leader election so only one node is doing the updating
+* During the exit node update process (which runs hourly), we assume that the number of TOR exit nodes is small enough that we can load them all into memory.  This makes updates much easier when we re-download the list. If this assumption were violated, we would have to do something more complex like double-buffering the list of exit nodes and versioning them.
 
-Test coverage is somewhat poor -- would probably make integration tests to run against a docker-compose setup to hit the actual postgres database and do some more automated IP exclusion testing.
+* Unit test coverage is somewhat spotty; in the interest of time, I haven't written any integration tests and instead done lots of manual testing.
 
-Country list hard coded in react because I don't know how to dynamically populate it from an API endpoint (react n00b)
+* Because the list of exit nodes updates on a regular cadence, the pagination could be a little weird if updates to the list happen while a user is browsing.  
+
+* I used `etcd` to perform leader election so only one server node is doing the updating.  Of course, the docker-compose setup only has a single server node, so this hasn't really been stress tested.
+
+* This is my first ever react app, so I couldn't figure out how to dynamically populate the list of country codes for filtering; the list is just hardcoded in the javascript.
+
+* The list of IP addresses to omit per user are called "allowed IPs" because the original task statement referred to these as an "allowlist"; this is a little confusing in a couple of places.
+
+## How to test
+
+1. `cd testing; docker-compose up --build` will rebuild and start the backend server.
+2. `cd static/ten; npm start` will start the frontend server.
+
+When the database is empty, the server will create a user with email `admin@admin.com` and password `password`.  This user can be used as normal, or to create additional users as desired.

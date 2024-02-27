@@ -1,7 +1,7 @@
 import { DataProvider, fetchUtils } from 'react-admin';
 import { stringify } from 'query-string';
 
-const apiUrl = 'http://greg.isthebest.com:8080';
+const apiUrl = 'http://localhost:8080';
 const httpClient = (url, options={}) => {
   if (!options.headers) {
     options.headers = new Headers({ Accept: 'application/json' });

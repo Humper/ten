@@ -1,4 +1,4 @@
-const apiUrl = 'http://greg.isthebest.com:8080';
+const apiUrl = 'http://localhost:8080';
 
 const authProvider = {
   login: ({ username, password }) => {
