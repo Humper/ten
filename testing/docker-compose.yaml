@@ -1,0 +1,40 @@
+version: '3'
+services:
+  app:
+    build: ../
+    ports:
+      - 8080:8080
+    depends_on:
+      db:
+        condition: service_healthy
+      etcd:
+        condition: service_started
+    command: start
+    volumes:
+      - ./app_config:/app_config
+  db:
+    image: postgres
+    environment:
+      - POSTGRES_USER=prophet
+      - POSTGRES_PASSWORD=some_fantastic_password
+      - POSTGRES_DB=ten
+    volumes:
+      - ./data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U prophet -d ten"]
+      interval: 5s
+      timeout: 5s
+      retries: 50
+    ports:
+      - 5432:5432
+  etcd:
+    image: quay.io/coreos/etcd
+    command: 
+      - etcd
+      - --listen-client-urls=http://0.0.0.0:2379
+      - --advertise-client-urls=http://etcd:2379
+    healthcheck:
+      test: etcdctl endpoint health
+      interval: 5s
+      timeout: 5s
+      retries: 50

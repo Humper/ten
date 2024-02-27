@@ -1,0 +1,7 @@
+geolocation_url: 'http://ip-api.com/batch'
+geolocation_batch_size: 100
+tor_source_urls:
+  - 'https://raw.githubusercontent.com/SecOps-Institute/Tor-IP-Addresses/master/tor-exit-nodes.lst'
+  - 'https://www.dan.me.uk/torlist/?exit'
+  - 'https://check.torproject.org/torbulkexitlist'
+etcd_host: 'etcd:2379'

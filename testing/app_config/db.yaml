@@ -1,0 +1,6 @@
+host: 'db'
+user: 'prophet'
+port: 5432
+password: 'some_fantastic_password'
+dbname: 'ten'
+sslmode: 'disable'
