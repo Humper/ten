@@ -25,7 +25,7 @@ func copyExitNode(node *models.TorExitNode) *models.TorExitNode {
 	}
 }
 
-func (t *torExitNodes) GetAll(ctx context.Context, country_codes []string, excludedIPs []string, pagination *models.Pagination) (*models.Pagination, error) {
+func (t *torExitNodes) GetAll(ctx context.Context, excludedIPs []string, pagination *models.Pagination) (*models.Pagination, error) {
 	t.mutex.Lock()
 	defer t.mutex.Unlock()
 
@@ -40,14 +40,19 @@ func (t *torExitNodes) GetAll(ctx context.Context, country_codes []string, exclu
 	exclusionSet := mapset.NewSet[string]()
 	exclusionSet.Append(excludedIPs...)
 
-	countrySet := mapset.NewSet[string]()
-	countrySet.Append(country_codes...)
-
 	filteredNodes := []*models.TorExitNode{}
+NODELOOP:
 	for _, node := range allNodes {
-		if (len(country_codes) == 0 || countrySet.Contains(node.CountryCode)) && !exclusionSet.Contains(node.IP) {
-			filteredNodes = append(filteredNodes, node)
+		for column, filter := range pagination.Filter {
+			if column == "country_code" && len(filter) > 0 {
+				countrySet := mapset.NewSet[string]()
+				countrySet.Append(filter...)
+				if !countrySet.Contains(node.CountryCode) {
+					continue NODELOOP
+				}
+			}
 		}
+		filteredNodes = append(filteredNodes, node)
 	}
 	data := make([]*models.TorExitNode, 0, pagination.GetLimit())
 
@@ -65,45 +70,6 @@ func (t *torExitNodes) GetAll(ctx context.Context, country_codes []string, exclu
 
 	for i := start; i < end; i++ {
 		data = append(data, copyExitNode(filteredNodes[i]))
-	}
-
-	pagination.Rows = data
-	return pagination, nil
-}
-
-func (t *torExitNodes) GetUniqueCountryCodes(ctx context.Context, pagination *models.Pagination) (*models.Pagination, error) {
-	t.mutex.Lock()
-	defer t.mutex.Unlock()
-
-	countrySet := mapset.NewSet[string]()
-
-	allNodes := []*models.TorExitNode{}
-	for _, node := range t.nodes {
-		if node.CountryCode != "" && !countrySet.Contains(node.CountryCode) {
-			countrySet.Add(node.CountryCode)
-			allNodes = append(allNodes, node)
-		}
-	}
-	sort.Slice(allNodes, func(i, j int) bool {
-		return allNodes[i].ID < allNodes[j].ID
-	})
-
-	data := make([]*models.TorExitNode, 0, pagination.GetLimit())
-
-	totalRows := len(allNodes)
-
-	pagination.TotalRows = int64(totalRows)
-	totalPages := int(math.Ceil(float64(totalRows) / float64(pagination.GetLimit())))
-	pagination.TotalPages = totalPages
-
-	start := pagination.GetOffset()
-	end := start + pagination.GetLimit()
-	if end > totalRows {
-		end = totalRows
-	}
-
-	for i := start; i < end; i++ {
-		data = append(data, copyExitNode(allNodes[i]))
 	}
 
 	pagination.Rows = data

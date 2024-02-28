@@ -193,7 +193,7 @@ func (tu *TORUpdater) DoUpdateTorExitNodes(ctx context.Context) {
 
 	total_found := 0
 	for {
-		pagination, err := tu.DB.TorExitNodes.GetAll(ctx, []string{}, []string{}, pagination)
+		pagination, err := tu.DB.TorExitNodes.GetAll(ctx, []string{}, pagination)
 		if err != nil {
 			slog.ErrorContext(ctx, "Failed to get tor exit nodes", "error", err)
 			return

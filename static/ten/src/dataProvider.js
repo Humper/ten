@@ -13,7 +13,6 @@ const httpClient = (url, options={}) => {
 const resourceMap = {
   IPs: 'tor',
   users: 'users',
-  country_code: 'country_code',
 };
 
 const dataProvider = {

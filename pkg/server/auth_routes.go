@@ -49,7 +49,7 @@ func (s *Server) HandleLogin(ctx context.Context, w http.ResponseWriter, r *http
 		Name:     "token",
 		Value:    signedToken,
 		Expires:  expirationTime,
-		Domain:   ".isthebest.com",
+		Domain:   "localhost",
 		Path:     "/",
 		HttpOnly: true,
 	})

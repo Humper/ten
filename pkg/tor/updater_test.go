@@ -75,7 +75,7 @@ func TestUpdateTorNodesCLeanEmptyDatabase(t *testing.T) {
 
 	tu.DoUpdateTorExitNodes(ctx)
 
-	pagination, err := db.TorExitNodes.GetAll(ctx, []string{}, []string{}, &models.Pagination{})
+	pagination, err := db.TorExitNodes.GetAll(ctx, []string{}, &models.Pagination{})
 	require.NoError(t, err, "Failed to get tor exit nodes")
 	assert.Equal(t, int64(1744), pagination.TotalRows)
 	require.Len(t, pagination.Rows, 10, "Unexpected number of tor exit nodes")
@@ -99,7 +99,7 @@ func TestUpdateTorNodesCLeanFullDatabase(t *testing.T) {
 	// calling this twice should not add any new nodes
 	tu.DoUpdateTorExitNodes(ctx)
 
-	pagination, err := db.TorExitNodes.GetAll(ctx, []string{}, []string{}, &models.Pagination{})
+	pagination, err := db.TorExitNodes.GetAll(ctx, []string{}, &models.Pagination{})
 	require.NoError(t, err, "Failed to get tor exit nodes")
 	assert.Equal(t, int64(1744), pagination.TotalRows)
 	require.Len(t, pagination.Rows, 10, "Unexpected number of tor exit nodes")
@@ -123,7 +123,7 @@ func TestUpdateTorNodesSmallOverlap(t *testing.T) {
 
 	tu.DoUpdateTorExitNodes(ctx)
 
-	pagination, err := db.TorExitNodes.GetAll(ctx, []string{}, []string{}, &models.Pagination{})
+	pagination, err := db.TorExitNodes.GetAll(ctx, []string{}, &models.Pagination{})
 	require.NoError(t, err, "Failed to get tor exit nodes")
 	assert.Equal(t, int64(21), pagination.TotalRows)
 	require.Len(t, pagination.Rows, 10, "Unexpected number of tor exit nodes")
@@ -150,7 +150,7 @@ func TestUpdateTorNodesSmallOverlapDelete(t *testing.T) {
 	tu.SourceURLs = []string{exitnodeServer.URL + "/tor/small"}
 	tu.DoUpdateTorExitNodes(ctx)
 
-	pagination, err := db.TorExitNodes.GetAll(ctx, []string{}, []string{}, &models.Pagination{})
+	pagination, err := db.TorExitNodes.GetAll(ctx, []string{}, &models.Pagination{})
 	require.NoError(t, err, "Failed to get tor exit nodes")
 	assert.Equal(t, int64(17), pagination.TotalRows)
 	require.Len(t, pagination.Rows, 10, "Unexpected number of tor exit nodes")
@@ -173,7 +173,7 @@ func TestGeoUpdates(t *testing.T) {
 
 	tu.DoUpdateGeoData(ctx)
 
-	pagination, err := db.TorExitNodes.GetAll(ctx, []string{}, []string{}, &models.Pagination{})
+	pagination, err := db.TorExitNodes.GetAll(ctx, []string{}, &models.Pagination{})
 	require.NoError(t, err, "Failed to get tor exit nodes")
 	assert.Len(t, pagination.Rows, 3, "Unexpected number of tor exit nodes")
 

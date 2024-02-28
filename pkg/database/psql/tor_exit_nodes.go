@@ -11,32 +11,19 @@ type torExitNodes struct {
 	db *gorm.DB
 }
 
-func (t *torExitNodes) GetAll(ctx context.Context, country_codes []string, excludedIPs []string, pagination *models.Pagination) (*models.Pagination, error) {
+func (t *torExitNodes) GetAll(ctx context.Context, excludedIPs []string, pagination *models.Pagination) (*models.Pagination, error) {
 	var exitNodes []*models.TorExitNode
 
 	db := t.db
-
-	if len(country_codes) > 0 {
-		db = db.Where("country_code IN ?", country_codes)
-	}
 
 	if len(excludedIPs) > 0 {
 		db = db.Where("ip NOT IN ?", excludedIPs)
 	}
 
-	db.Scopes(paginate(exitNodes, pagination, db)).Find(&exitNodes)
-	pagination.Rows = exitNodes
+	if err := db.Scopes(paginate(exitNodes, pagination, db)).Find(&exitNodes).Error; err != nil {
+		return nil, err
+	}
 
-	return pagination, nil
-}
-
-func (t *torExitNodes) GetUniqueCountryCodes(ctx context.Context, pagination *models.Pagination) (*models.Pagination, error) {
-	var exitNodes []*models.TorExitNode
-
-	db := t.db
-
-	db = db.Select("DISTINCT country_code")
-	db.Scopes(paginate(exitNodes, pagination, db)).Find(&exitNodes)
 	pagination.Rows = exitNodes
 
 	return pagination, nil
