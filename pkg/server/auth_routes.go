@@ -50,8 +50,6 @@ func (s *Server) HandleLogin(ctx context.Context, w http.ResponseWriter, r *http
 
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(user)
-
-	w.WriteHeader(http.StatusOK)
 }
 
 func (s *Server) HandleRegister(ctx context.Context, w http.ResponseWriter, r *http.Request) {
@@ -81,8 +79,6 @@ func (s *Server) HandleRegister(ctx context.Context, w http.ResponseWriter, r *h
 	w.Header().Set("Content-Type", "application/json")
 
 	json.NewEncoder(w).Encode(u)
-
-	w.WriteHeader(http.StatusOK)
 }
 
 func (s *Server) HandleLogout(ctx context.Context, w http.ResponseWriter, r *http.Request) {
@@ -109,8 +105,6 @@ func (s *Server) HandleGetUsers(ctx context.Context, w http.ResponseWriter, r *h
 
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(pagination)
-
-	w.WriteHeader(http.StatusOK)
 }
 
 func (s *Server) HandleGetUser(ctx context.Context, w http.ResponseWriter, r *http.Request) {
@@ -128,8 +122,6 @@ func (s *Server) HandleGetUser(ctx context.Context, w http.ResponseWriter, r *ht
 
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(user)
-
-	w.WriteHeader(http.StatusOK)
 }
 
 func (s *Server) HandleUpdateUser(ctx context.Context, w http.ResponseWriter, r *http.Request) {
@@ -166,8 +158,6 @@ func (s *Server) HandleUpdateUser(ctx context.Context, w http.ResponseWriter, r 
 		return
 	}
 	json.NewEncoder(w).Encode(u)
-
-	w.WriteHeader(http.StatusOK)
 }
 
 func (s *Server) HandleDeleteUser(ctx context.Context, w http.ResponseWriter, r *http.Request) {
@@ -189,8 +179,6 @@ func (s *Server) HandleDeleteUser(ctx context.Context, w http.ResponseWriter, r 
 		return
 	}
 	json.NewEncoder(w).Encode(u)
-
-	w.WriteHeader(http.StatusOK)
 }
 
 func (s *Server) AddAuthRoutes(ctx context.Context, mux *http.ServeMux) {
