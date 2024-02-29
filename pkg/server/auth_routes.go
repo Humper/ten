@@ -8,7 +8,6 @@ import (
 
 	"github.com/humper/tor_exit_nodes/models"
 	"github.com/humper/tor_exit_nodes/pkg/auth"
-	"golang.org/x/crypto/bcrypt"
 )
 
 type LoginRequest struct {
@@ -17,11 +16,6 @@ type LoginRequest struct {
 }
 
 func (s *Server) HandleLogin(ctx context.Context, w http.ResponseWriter, r *http.Request) {
-	if r.Method != "POST" {
-		HttpError(w, "Method not allowed", http.StatusMethodNotAllowed)
-		return
-	}
-
 	var loginReq LoginRequest
 	if err := json.NewDecoder(r.Body).Decode(&loginReq); err != nil {
 		HttpError(w, "Invalid request", http.StatusBadRequest)
@@ -61,11 +55,6 @@ func (s *Server) HandleLogin(ctx context.Context, w http.ResponseWriter, r *http
 }
 
 func (s *Server) HandleRegister(ctx context.Context, w http.ResponseWriter, r *http.Request) {
-	if r.Method != "POST" {
-		HttpError(w, "Method not allowed", http.StatusMethodNotAllowed)
-		return
-	}
-
 	var u models.User
 	if err := json.NewDecoder(r.Body).Decode(&u); err != nil {
 		HttpError(w, "Invalid request", http.StatusBadRequest)
@@ -77,13 +66,13 @@ func (s *Server) HandleRegister(ctx context.Context, w http.ResponseWriter, r *h
 		return
 	}
 
-	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(u.Password), bcrypt.DefaultCost)
+	hashedPassword, err := auth.HashPassword(u.Password)
 	if err != nil {
-		HttpError(w, "Failed to hash password", http.StatusInternalServerError)
+		HttpError(w, "Failed to hash password", http.StatusBadRequest)
 		return
 	}
 
-	u.Password = string(hashedPassword)
+	u.Password = hashedPassword
 
 	if err := s.db.Users.Create(ctx, &u); err != nil {
 		HttpError(w, "Failed to create user", http.StatusInternalServerError)
@@ -152,15 +141,15 @@ func (s *Server) HandleUpdateUser(ctx context.Context, w http.ResponseWriter, r 
 		return
 	}
 
-	existingUser, err := s.db.Users.GetByID(ctx, uint(id))
-	if err != nil {
-		HttpError(w, "Unknown user", http.StatusInternalServerError)
-		return
-	}
-
 	var u models.User
 	if err := json.NewDecoder(r.Body).Decode(&u); err != nil {
 		HttpError(w, "Invalid request", http.StatusBadRequest)
+		return
+	}
+
+	existingUser, err := s.db.Users.GetByID(ctx, uint(id))
+	if err != nil {
+		HttpError(w, "Unknown user", http.StatusInternalServerError)
 		return
 	}
 
@@ -223,7 +212,7 @@ func (s *Server) AddAuthRoutes(ctx context.Context, mux *http.ServeMux) {
 	mux.HandleFunc("DELETE /users/{id}", func(w http.ResponseWriter, r *http.Request) {
 		s.HandleDeleteUser(ctx, w, r)
 	})
-	mux.HandleFunc("GET /logout", func(w http.ResponseWriter, r *http.Request) {
+	mux.HandleFunc("POST /logout", func(w http.ResponseWriter, r *http.Request) {
 		s.HandleLogout(ctx, w, r)
 	})
 }

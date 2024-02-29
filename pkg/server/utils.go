@@ -16,7 +16,7 @@ func getPagination(w http.ResponseWriter, r *http.Request) (*models.Pagination, 
 	}
 	limitstr := r.URL.Query().Get("limit")
 	if limitstr == "" {
-		limitstr = "50"
+		limitstr = "10"
 	}
 
 	page, err := strconv.Atoi(pagestr)

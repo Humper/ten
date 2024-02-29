@@ -60,7 +60,7 @@ func TestMain(m *testing.M) {
 	os.Exit(code)
 }
 
-func TestUpdateTorNodesCLeanEmptyDatabase(t *testing.T) {
+func TestUpdateTorNodesCleanEmptyDatabase(t *testing.T) {
 	ctx := context.Background()
 	db, err := memory.New(ctx)
 	require.NoError(t, err, "Failed to create memory database")
@@ -82,7 +82,7 @@ func TestUpdateTorNodesCLeanEmptyDatabase(t *testing.T) {
 
 }
 
-func TestUpdateTorNodesCLeanFullDatabase(t *testing.T) {
+func TestUpdateTorNodesCleanFullDatabase(t *testing.T) {
 	ctx := context.Background()
 	db, err := memory.New(ctx)
 	require.NoError(t, err, "Failed to create memory database")

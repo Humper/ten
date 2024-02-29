@@ -34,3 +34,24 @@ func (p *Pagination) GetSort() string {
 	}
 	return p.Sort
 }
+
+// Convenience types for unmarshaling json responses with the correct rows type
+type TENPagination struct {
+	Limit      int                 `json:"limit,omitempty;query:limit"`
+	Page       int                 `json:"page,omitempty;query:page"`
+	Sort       string              `json:"sort,omitempty;query:sort"`
+	TotalRows  int64               `json:"total_rows"`
+	TotalPages int                 `json:"total_pages"`
+	Filter     map[string][]string `json:"filter,omitempty;query:filter"`
+	Rows       []*TorExitNode      `json:"rows"`
+}
+
+type UserPagination struct {
+	Limit      int                 `json:"limit,omitempty;query:limit"`
+	Page       int                 `json:"page,omitempty;query:page"`
+	Sort       string              `json:"sort,omitempty;query:sort"`
+	TotalRows  int64               `json:"total_rows"`
+	TotalPages int                 `json:"total_pages"`
+	Filter     map[string][]string `json:"filter,omitempty;query:filter"`
+	Rows       []*User             `json:"rows"`
+}

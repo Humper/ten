@@ -3,7 +3,7 @@ package fixtures
 import "github.com/humper/tor_exit_nodes/pkg/tor"
 
 var MockEndpoints = map[string]string{
-	"/tor/clean": `101.99.84.87,
+	"/tor/clean": `101.99.84.87
 101.99.92.179
 101.99.92.182
 101.99.92.194

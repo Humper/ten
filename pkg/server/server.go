@@ -43,38 +43,49 @@ func New(ctx context.Context, params *NewServerParams) *Server {
 	// mux.Handle("GET /", http.FileServer(http.Dir("static")))
 
 	s.mux = mux
-	go s.process(ctx)
+
+	if s.etcd != nil || s.torUpdater != nil {
+		go s.process(ctx)
+	}
 
 	return s
 }
 
 func (s *Server) process(ctx context.Context) {
+	var election *concurrency.Election
 	for {
-		slog.InfoContext(ctx, "Starting leader election")
-		session, err := concurrency.NewSession(s.etcd, concurrency.WithTTL(10))
-		if err != nil {
-			slog.ErrorContext(ctx, "Failed to create etcd session", "error", err)
-			panic(err)
-		}
-		defer session.Close()
-
-		slog.InfoContext(ctx, "Trying to become leader")
-		election := concurrency.NewElection(session, "ten")
-		if err := election.Campaign(ctx, "ten"); err != nil {
-			slog.ErrorContext(ctx, "Failed to campaign for leadership", "error", err)
-			panic(err)
-		}
-
-		slog.InfoContext(ctx, "Became leader")
-
-		go s.torUpdater.UpdateTorExitNodes(ctx)
-		select {
-		case <-ctx.Done():
-			if err := election.Resign(ctx); err != nil {
-				slog.ErrorContext(ctx, "Failed to resign", "error", err)
+		if s.etcd != nil {
+			slog.InfoContext(ctx, "Starting leader election")
+			session, err := concurrency.NewSession(s.etcd, concurrency.WithTTL(10))
+			if err != nil {
+				slog.ErrorContext(ctx, "Failed to create etcd session", "error", err)
+				panic(err)
 			}
-			slog.InfoContext(ctx, "Resigned Leadership")
-			return
+			defer session.Close()
+
+			slog.InfoContext(ctx, "Trying to become leader")
+			election = concurrency.NewElection(session, "ten")
+			if err := election.Campaign(ctx, "ten"); err != nil {
+				slog.ErrorContext(ctx, "Failed to campaign for leadership", "error", err)
+				panic(err)
+			}
+
+			slog.InfoContext(ctx, "Became leader")
+		}
+
+		if s.torUpdater != nil {
+			go s.torUpdater.UpdateTorExitNodes(ctx)
+		}
+
+		if s.etcd != nil {
+			select {
+			case <-ctx.Done():
+				if err := election.Resign(ctx); err != nil {
+					slog.ErrorContext(ctx, "Failed to resign", "error", err)
+				}
+				slog.InfoContext(ctx, "Resigned Leadership")
+				return
+			}
 		}
 	}
 }
@@ -126,6 +137,10 @@ func (s *Server) GetLogin(next http.Handler) http.Handler {
 	})
 }
 
+func (s *Server) GetHandler() http.Handler {
+	return Cors(s.GetLogin(s.mux))
+}
+
 func (s *Server) Serve(ctx context.Context, port int) error {
-	return http.ListenAndServe(fmt.Sprintf(":%d", port), Cors(s.GetLogin(s.mux)))
+	return http.ListenAndServe(fmt.Sprintf(":%d", port), s.GetHandler())
 }
